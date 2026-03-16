@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="floating-island" class="w-full md:w-1/2 flex justify-center island-float">
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="auto" viewBox="0 0 800 600" class="max-w-xl">
+        <defs>
+            <filter id="ds" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="18" stdDeviation="10" flood-color="#000000" flood-opacity="0.18"/>
+            </filter>
+        </defs>
+        <g filter="url(#ds)" transform="translate(0, 60)">
+            <!--Grass Top Surface-->
+            <polygon points="400,90 640,210 400,330 160,210" fill="#6DD780" stroke="#000" stroke-opacity="0.06"/>
+            <!--Grass Sides -->
+            <polygon points="160,210 400,330 400,360 160,240" fill="#50AE61" stroke="#000" stroke-opacity="0.06"/>
+            <polygon points="640,210 400,330 400,360 640,240" fill="#489D58" stroke="#000" stroke-opacity="0.06"/>
+            <!--Rock Middle Tiers-->
+            <polygon points="190,255 400,360 400,385 190,280" fill="#B5763E" stroke="#000" stroke-opacity="0.06"/>
+            <polygon points="610,255 400,360 400,385 610,280" fill="#B5763E" stroke="#000" stroke-opacity="0.06"/>
+            <!--Rock Bottom Tiers -->
+            <polygon points="250,310 400,385 400,410 250,335" fill="#C38E60" stroke="#000" stroke-opacity="0.06"/>
+            <polygon points="550,310 400,385 400,410 550,335" fill="#C38E60" stroke="#000" stroke-opacity="0.06"/>
+            <g opacity="0.18">
+                <polygon points="340,160 360,170 340,180 320,170" fill="#888888"/>
+                <polygon points="520,190 540,200 520,210 500,200" fill="#888888"/>
+                <polygon points="320,230 340,240 320,250 300,240" fill="#888888"/>
+                <polygon points="420,260 440,270 420,280 400,270" fill="#888888"/>
+                <polygon points="400,150 420,160 400,170 380,160" fill="#888888"/>
+                <polygon points="560,200 580,210 560,220 540,210" fill="#888888"/>
+                <polygon points="400,290 420,300 400,310 380,300" fill="#888888"/>
+                <polygon points="280,160 300,170 280,180 260,170" fill="#888888"/>
+                <polygon points="460,140 480,150 460,160 440,150" fill="#888888"/>
+            </g>
+            <!--Tree-->
+            <g>
+                <!--Trunk-->
+                <polygon points="340,109 351,114.5 340,120 329,114.5" fill="#9A6A3A" stroke="#000"
+                         stroke-opacity="0.06"/>
+                <polygon points="351,114.5 340,120 340,168 351,162.5" fill="#7F532D" stroke="#000"
+                         stroke-opacity="0.06"/>
+                <polygon points="329,114.5 340,120 340,168 329,162.5" fill="#6E4828" stroke="#000"
+                         stroke-opacity="0.06"/>
+                <!--Leaves Layer 1-->
+                <polygon points="340,90 370,105 340,120 310,105" fill="#C86E6F" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="370,105 340,120 340,142 370,127" fill="#AE4143" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="310,105 340,120 340,142 310,127" fill="#8E1C1E" stroke="#000" stroke-opacity="0.06"/>
+                <!--Leaves Layer 2-->
+                <polygon points="340,76 362,87 340,98 318,87" fill="#C86E6F" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="362,87 340,98 340,116 362,105" fill="#AE4143" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="318,87 340,98 340,116 318,105" fill="#8E1C1E" stroke="#000" stroke-opacity="0.06"/>
+                <!--Leaves Layer 3-->
+                <polygon points="340,65 355,72.5 340,80 325,72.5" fill="#C86E6F" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="355,72.5 340,80 340,94 355,86.5" fill="#AE4143" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="325,72.5 340,80 340,94 325,86.5" fill="#8E1C1E" stroke="#000" stroke-opacity="0.06"/>
+            </g>
+            <!--Tree 2-->
+            <g>
+                <!--Trunk-->
+                <polygon points="540,146 554,153 540,160 526,153" fill="#9A6A3A" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="554,153 540,160 540,208 554,201" fill="#7F532D" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="526,153 540,160 540,208 526,201" fill="#6E4828" stroke="#000" stroke-opacity="0.06"/>
+                <!--Leaves Layer 1-->
+                <polygon points="540,122 578,141 540,160 502,141" fill="#FBBF24" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="578,141 540,160 540,185 578,166" fill="#F59E0B" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="502,141 540,160 540,185 502,166" fill="#D97706" stroke="#000" stroke-opacity="0.06"/>
+                <!--Leaves Layer 2-->
+                <polygon points="540,107 568,121 540,135 512,121" fill="#FBBF24" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="568,121 540,135 540,157 568,143" fill="#F59E0B" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="512,121 540,135 540,157 512,143" fill="#D97706" stroke="#000" stroke-opacity="0.06"/>
+                <!--Leaves Layer 3-->
+                <polygon points="540,93 560,103 540,113 520,103" fill="#FBBF24" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="560,103 540,113 540,131 560,121" fill="#F59E0B" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="520,103 540,113 540,131 520,121" fill="#D97706" stroke="#000" stroke-opacity="0.06"/>
+            </g>
+            <!--Pond-->
+            <g>
+                <!--Rim-->
+                <polygon points="450,215 530,255 450,295 370,255" fill="#3BBFFF" stroke="#000" stroke-opacity="0.06"/>
+
+                <!--Highlight-->
+                <polygon points="440,255 460,245 480,255 460,265" fill="#FFFFFF" opacity="0.25"/>
+            </g>
+            <!--Tree-->
+            <g>
+                <!--Trunk-->
+                <polygon points="260,186 274,193 260,200 246,193" fill="#9A6A3A" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="274,193 260,200 260,248 274,241" fill="#7F532D" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="246,193 260,200 260,248 246,241" fill="#6E4828" stroke="#000" stroke-opacity="0.06"/>
+                <!--Leaves Layer 1-->
+                <polygon points="260,158 302,179 260,200 218,179" fill="#34D399" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="302,179 260,200 260,228 302,207" fill="#10B981" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="218,179 260,200 260,228 218,207" fill="#059669" stroke="#000" stroke-opacity="0.06"/>
+                <!--Leaves Layer 2-->
+                <polygon points="260,138 293,154.5 260,171 227,154.5" fill="#34D399" stroke="#000"
+                         stroke-opacity="0.06"/>
+                <polygon points="293,154.5 260,171 260,195 293,178.5" fill="#10B981" stroke="#000"
+                         stroke-opacity="0.06"/>
+                <polygon points="227,154.5 260,171 260,195 227,178.5" fill="#059669" stroke="#000"
+                         stroke-opacity="0.06"/>
+                <!--Leaves Layer 3-->
+                <polygon points="260,120 284,132 260,144 236,132" fill="#34D399" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="284,132 260,144 260,164 284,152" fill="#10B981" stroke="#000" stroke-opacity="0.06"/>
+                <polygon points="236,132 260,144 260,164 236,152" fill="#059669" stroke="#000" stroke-opacity="0.06"/>
+            </g>
+        </g>
+    </svg>
+</div>
+</html>

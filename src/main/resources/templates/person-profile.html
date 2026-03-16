@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Flowcus - User Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-gray-900">
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<main class="container mx-auto px-4 py-12 max-w-4xl">
+
+    <!-- Target User's Profile Header Section -->
+    <div class="flex items-center mb-12 ml-4">
+        <div class="w-24 h-24 rounded-full border-1 border-gray-800 overflow-hidden bg-white shadow-sm flex items-center justify-center">
+            <img th:if="${targetUser.profilePic != null}" th:src="${targetUser.profilePic}" alt="Profile Picture" class="w-full h-full object-cover">
+            <svg th:unless="${targetUser.profilePic != null}" class="w-16 h-16 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+        </div>
+        <span class="ml-6 text-2xl font-medium" th:text="${targetUser.username}">Target User</span>
+    </div>
+
+    <!-- Conditional Display: IF PUBLIC -->
+    <div th:if="${targetUser.public}">
+        <h2 class="text-2xl mb-6 ml-4">Past Sessions</h2>
+
+        <div class="bg-gray-200 rounded-2xl shadow-inner border border-gray-300 overflow-hidden">
+            <div th:if="${#lists.isEmpty(pastSessions)}" class="p-8 text-center text-gray-500">
+                This user hasn't completed any sessions yet.
+            </div>
+
+            <div th:each="tempPomoSession, iterStat : ${pastSessions}"
+                 class="flex justify-between items-center p-5 hover:bg-gray-300 transition-colors duration-200"
+                 th:classappend="${!iterStat.last} ? 'border-b border-gray-400' : ''">
+
+                <div class="flex-1">
+                    <div class="text-lg mb-1" th:text="${tempPomoSession.formattedDateTime}">1/1/2026 4:00pm</div>
+                    <div class="text-gray-800">
+                            <span th:text="${tempPomoSession.active ? 'Active Session:' : 'Ended Session:'}"
+                                  th:classappend="${tempPomoSession.active ? 'text-green-700 font-bold' : ''}">Ended Session:</span>
+                        <span th:text="${tempPomoSession.title}">Session Title</span><br>
+                        <span th:text="${tempPomoSession.formattedFocusTime}">Total 51 min focus</span>,
+                        <span th:text="${tempPomoSession.formattedShortBreakTime}">5 min short break</span>,
+                        <span th:text="${tempPomoSession.formattedLongBreakTime}">10 min long break</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4 ml-6" th:if="${tempPomoSession.active}">
+                        <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold uppercase rounded-full shadow-sm border border-green-300">
+                            In Progress
+                        </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conditional Display: IF PRIVATE -->
+    <div th:unless="${targetUser.public}">
+        <div class="bg-gray-200 rounded-2xl border border-gray-300 p-12 text-center shadow-inner">
+            <svg class="w-16 h-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+            <h3 class="text-xl text-gray-700 font-medium">This user's profile is private.</h3>
+            <p class="text-gray-500 mt-2">Their session history is hidden.</p>
+        </div>
+    </div>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Flowcus - Past Sessions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-gray-900">
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<main class="container mx-auto px-4 py-12 max-w-4xl">
+
+  <!-- Profile Header Section -->
+  <div class="flex items-center mb-12 ml-4">
+    <div class="w-24 h-24 rounded-full border-1 border-gray-800 overflow-hidden bg-white shadow-sm flex items-center justify-center">
+      <!-- If profile pic exists, show it. Otherwise use generic icon -->
+      <img th:if="${currentUser.profilePic != null}" th:src="${currentUser.profilePic}" alt="Profile Picture" class="w-full h-full object-cover">
+      <svg th:unless="${currentUser.profilePic != null}" class="w-16 h-16 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+      </svg>
+    </div>
+    <span class="ml-6 text-2xl font-medium" th:text="${currentUser.username} + '  (Me)'"></span></div>
+
+  <h2 class="text-2xl mb-6 ml-4">Past Sessions</h2>
+
+  <!-- Sessions List Container -->
+  <div class="bg-gray-200 rounded-2xl shadow-inner border border-gray-300 overflow-hidden">
+
+    <!-- Check if there are no sessions -->
+    <div th:if="${#lists.isEmpty(pastSessions)}" class="p-8 text-center text-gray-500">
+      You haven't completed any sessions yet!
+    </div>
+
+    <!-- Loop through each PastSessionDto -->
+    <div th:each="tempPomoSession, iterStat : ${pastSessions}"
+         class="flex justify-between items-center p-5 hover:bg-gray-300 transition-colors duration-200"
+         th:classappend="${!iterStat.last} ? 'border-b border-gray-400' : ''">
+
+      <!-- Left side: Session Details -->
+      <div class="flex-1">
+        <div class="text-lg mb-1" th:text="${tempPomoSession.formattedDateTime}">1/1/2026 4:00pm</div>
+        <div class="text-gray-800">
+          <!-- Dynamic Label: Changes color and text if active -->
+          <span th:text="${tempPomoSession.active ? 'Active Session:' : 'Ended Session:'}"
+                th:classappend="${tempPomoSession.active ? 'text-green-700 font-bold' : ''}">Ended Session:</span>
+          <span th:text="${tempPomoSession.title}">Session Title</span><br>
+          <span th:text="${tempPomoSession.getFormattedFocusTime()}">Total 51 min focus</span>,
+          <span th:text="${tempPomoSession.getFormattedShortBreakTime()}">5 min short break</span>,
+          <span th:text="${tempPomoSession.getFormattedLongBreakTime()}">10 min long break</span>
+        </div>
+      </div>
+
+      <!-- Right side: Action Icons (only shown if session is not active) -->
+      <div class="flex items-center space-x-4 ml-6" th:if="${!tempPomoSession.active}">
+        <!-- Edit Button -->
+        <a th:href="@{/sessions/edit/{id}(id=${tempPomoSession.id})}" class="text-black hover:text-gray-600 transition" title="Edit Session">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <!-- Pencil/Square Edit Icon -->
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          </svg>
+        </a>
+
+        <!-- Delete Form/Button with JS Prompt -->
+        <form th:action="@{/sessions/{id}/delete(id=${tempPomoSession.id})}" method="post"
+              onsubmit="return confirm('Are you sure you want to permanently delete this session?');">
+          <button type="submit" class="text-red-600 hover:text-red-800 transition" title="Delete Session">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+              <!-- Delete Icon -->
+              <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"></path>
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <!-- Active Indicator (shown only if session is active) -->
+      <div class="flex items-center space-x-4 ml-6" th:if="${tempPomoSession.active}">
+                    <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold uppercase rounded-full shadow-sm border border-green-300">
+                        In Progress
+                    </span>
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+
+</body>
+</html>

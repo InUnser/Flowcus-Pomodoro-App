@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Flowcus - Account Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-gray-900">
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<main class="container mx-auto px-4 py-12 flex justify-center items-center">
+
+    <div class="w-full max-w-xl bg-gray-300 p-10 rounded-[2.5rem] shadow-sm">
+        <h1 class="text-5xl font-medium text-center mb-8">Account Settings</h1>
+
+        <!-- Success Message Alert (Shown via Flash Attributes after saving) -->
+        <div th:if="${successMessage}" class="mb-8 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl text-center font-medium">
+            <p th:text="${successMessage}"></p>
+        </div>
+
+        <form th:action="@{/settings}" th:object="${profileDto}" method="post" class="space-y-6">
+
+            <!-- Profile Picture Display (View Only) -->
+            <div class="flex flex-col items-center mb-6">
+                <div class="w-32 h-32 rounded-full border-4 border-gray-800 overflow-hidden bg-white shadow-sm flex items-center justify-center mb-2">
+                    <!-- Shows user image or default SVG -->
+                    <img th:if="${currentUser.profilePic != null}" th:src="${currentUser.profilePic}" alt="Profile Picture" class="w-full h-full object-cover">
+                    <svg th:unless="${currentUser.profilePic != null}" class="w-20 h-20 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Username -->
+            <div>
+                <label class="block text-2xl mb-2">Username</label>
+                <input type="text" th:field="*{username}"
+                       class="w-full p-3 rounded-lg border-none focus:ring-2 focus:ring-green-800 outline-none text-xl bg-white shadow-inner">
+                <p th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-red-600 text-sm mt-1"></p>
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label class="block text-2xl mb-2">Email</label>
+                <input type="email" th:field="*{email}"
+                       class="w-full p-3 rounded-lg border-none focus:ring-2 focus:ring-green-800 outline-none text-xl bg-white shadow-inner">
+                <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-red-600 text-sm mt-1"></p>
+            </div>
+
+            <!-- New Password -->
+            <div>
+                <label class="block text-2xl mb-2">
+                    New Password <span class="text-sm text-gray-500 font-normal align-middle">(Leave blank to keep current)</span>
+                </label>
+                <input type="password" th:field="*{newPassword}" placeholder="••••••••"
+                       class="w-full p-3 rounded-lg border-none focus:ring-2 focus:ring-green-800 outline-none text-xl bg-white shadow-inner">
+                <p th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}" class="text-red-600 text-sm mt-1"></p>
+            </div>
+
+            <!-- Confirm New Password -->
+            <div>
+                <label class="block text-2xl mb-2">Confirm New Password</label>
+                <input type="password" th:field="*{confirmNewPassword}" placeholder="••••••••"
+                       class="w-full p-3 rounded-lg border-none focus:ring-2 focus:ring-green-800 outline-none text-xl bg-white shadow-inner">
+                <p th:if="${#fields.hasErrors('confirmNewPassword')}" th:errors="*{confirmNewPassword}" class="text-red-600 text-sm mt-1"></p>
+            </div>
+
+            <!-- Profile Visibility -->
+            <div>
+                <label class="block text-2xl mb-3">Profile Visibility</label>
+                <div class="flex items-center space-x-12 px-2">
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="radio" th:field="*{profileVisibility}" value="Public"
+                               class="w-6 h-6 text-green-800 focus:ring-green-800 border-gray-300 cursor-pointer">
+                        <span class="text-xl">Public</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="radio" th:field="*{profileVisibility}" value="Private"
+                               class="w-6 h-6 text-green-800 focus:ring-green-800 border-gray-300 cursor-pointer">
+                        <span class="text-xl">Private</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-between gap-4 pt-6">
+                <a th:href="@{/home}"
+                   class="bg-red-700 text-white px-8 py-3 rounded-xl text-xl font-bold hover:bg-red-800 transition shadow-md w-1/2 text-center">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="bg-green-800 text-white px-8 py-3 rounded-xl text-xl font-bold hover:bg-green-900 transition shadow-md w-1/2">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+
+</main>
+
+</body>
+</html>

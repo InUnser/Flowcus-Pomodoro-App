@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Flowcus - ' + ${phaseLabel}">Flowcus - Timer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        .island-float { animation: float 5s ease-in-out infinite; }
+        .timer-container { background: rgba(229, 231, 235, 0.9); backdrop-filter: blur(8px); }
+
+        /* Dynamic Glows based on phase */
+        .glow-green { color: #059669; text-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+        .glow-blue { color: #2563EB; text-shadow: 0 0 15px rgba(37, 99, 235, 0.4); }
+        .glow-orange { color: #EA580C; text-shadow: 0 0 15px rgba(234, 88, 12, 0.4); }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<main class="container mx-auto px-4 min-h-[calc(100vh-80px)] flex flex-col md:flex-row items-center justify-around">
+
+    <!-- Left Half: Floating Island -->
+    <div th:replace="~{fragments/island :: floating-island}"></div>
+
+    <!-- Right Half: Timer Container -->
+    <div class="w-full md:w-1/2 max-w-lg timer-container p-12 rounded-[3rem] shadow-xl text-center">
+
+        <!-- Dynamic Badge (e.g., Focus #1, Short Break #1) -->
+        <div class="inline-block bg-white px-8 py-2 rounded-2xl shadow-sm mb-6 font-bold uppercase tracking-widest"
+             th:classappend="'text-' + ${themeColor} + '-700'"
+             th:text="${phaseLabel} + ' #' + ${currentFocusCount}">
+            Phase Label
+        </div>
+
+        <h2 id="timerLabel" class="text-3xl text-gray-600 mb-2">Remaining</h2>
+
+        <!-- Timer Display -->
+        <div id="timerDisplay" class="text-9xl font-black mb-10 transition-colors duration-500"
+             th:classappend="'text-' + ${themeColor} + '-800'">
+        </div>
+
+        <div class="text-left space-y-2 mb-12 text-xl text-gray-700 border-t border-gray-300 pt-6">
+            <p>Current Session Title: <span class="font-bold" th:text="${sessionDto.title}">xxx</span></p>
+            <p>Focus Goal: <span class="font-bold"
+                                 th:text="${currentFocusCount} + ' / ' + ${targetFocusCount}">1 / 4</span></p>
+            <p>Short Break Duration: <span class="font-bold"
+                                           th:text="${sessionDto.shortBreakDuration} + ' min'">xx</span></p>
+            <p>Long Break Duration: <span class="font-bold" th:text="${sessionDto.longBreakDuration} + ' min'">xx</span>
+            </p>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-center gap-10">
+            <form th:action="@{/sessions/end/{id}(id=${sessionId})}" method="post" id="endSessionForm">
+                <input type="hidden" name="actualDuration" value="0">
+                <input type="hidden" name="startTime" value="">
+                <button type="button" onclick="endSession()" class="flex flex-col items-center group">
+                    <div class="w-20 h-20 border-4 border-gray-800 rounded-full flex items-center justify-center group-hover:bg-red-600 group-hover:border-red-600 group-hover:text-white transition shadow-md">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                    <span class="text-sm mt-3 font-bold uppercase">End</span>
+                </button>
+            </form>
+
+            <button onclick="togglePause()" id="pauseBtn" class="flex flex-col items-center group">
+                <div class="w-20 h-20 border-4 border-gray-800 rounded-full flex items-center justify-center group-hover:bg-gray-800 group-hover:text-white transition shadow-md">
+                    <svg id="pauseIcon" class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6"></path>
+                    </svg>
+                </div>
+                <span id="pauseLabel" class="text-sm mt-3 font-bold uppercase">Pause</span>
+            </button>
+
+            <form th:action="@{/sessions/transition/{id}(id=${sessionId})}" method="post" id="transitionForm">
+                <input type="hidden" name="nextPhase" th:value="${nextPhaseValue}">
+                <input type="hidden" name="actualDuration" value="0">
+                <input type="hidden" name="startTime" value="">
+                <button type="button" onclick="skipToNextPhase()" class="flex flex-col items-center group">
+                    <div class="w-20 h-20 border-4 border-gray-800 rounded-full flex items-center justify-center group-hover:bg-green-700 group-hover:border-green-700 group-hover:text-white transition shadow-md">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    <span class="text-sm mt-3 font-bold uppercase" th:text="'Skip to ' + ${nextPhaseLabel}">Skip</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script th:inline="javascript">
+    // Inject variables from Spring Boot
+    const phaseDurationMinutes = [[${durationMinutes}]];
+    const sessionId = [[${sessionId}]];
+    const title = [[${sessionDto.title}]];
+    const currentPhaseEnum = [[${currentPhaseEnum}]]; // "FOCUS", "SHORT_BREAK", "LONG_BREAK"
+    const themeColor = [[${themeColor}]]; // "green", "blue", "orange"
+
+    let timeLeft = phaseDurationMinutes * 60;
+    let elapsedSeconds = 0;
+    let trueStartTime = "";
+    let isPaused = false;
+    let isOvertime = false;
+    let timerInterval;
+
+    function getLocalISOString() {
+        const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+        return (new Date(Date.now() - tzoffset)).toISOString().substring(0, 19);
+    }
+
+    function loadState() {
+        const savedData = JSON.parse(localStorage.getItem('flowcus_active'));
+
+        // Validate: Only load if ID matches AND phase matches
+        if (savedData && savedData.sessionId === sessionId && savedData.type === currentPhaseEnum) {
+            isPaused = savedData.isPaused;
+            isOvertime = savedData.isOvertime || savedData.isFlowState || false;
+            elapsedSeconds = savedData.elapsedSeconds || 0;
+            trueStartTime = savedData.trueStartTime;
+
+            if (isPaused) {
+                timeLeft = savedData.timeLeft;
+                document.getElementById('pauseLabel').innerText = "Resume";
+                document.getElementById('pauseIcon').innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>`;
+            } else {
+                const now = Date.now();
+                const secondsPassed = Math.floor((now - savedData.lastUpdated) / 1000);
+                elapsedSeconds += secondsPassed;
+
+                if (isOvertime) {
+                    timeLeft = savedData.timeLeft + secondsPassed;
+                } else {
+                    timeLeft = savedData.timeLeft - secondsPassed;
+                    if (timeLeft <= 0) isOvertime = true;
+                }
+            }
+        } else {
+            // Brand new phase, create fresh start time
+            trueStartTime = getLocalISOString();
+        }
+
+        if (isOvertime) enterOvertimeVisuals();
+        updateDisplay();
+        saveState();
+    }
+
+    function saveState() {
+        localStorage.setItem('flowcus_active', JSON.stringify({
+            sessionId: sessionId,
+            type: currentPhaseEnum,
+            title: title,
+            timeLeft: timeLeft,
+            elapsedSeconds: elapsedSeconds,
+            trueStartTime: trueStartTime,
+            isPaused: isPaused,
+            isOvertime: isOvertime,
+            isFlowState: isOvertime, // Keep backward compatibility for header widget
+            lastUpdated: Date.now()
+        }));
+    }
+
+    function updateDisplay() {
+        const timeToDisplay = isOvertime ? elapsedSeconds : Math.abs(timeLeft);
+        const minutes = Math.floor(timeToDisplay / 60);
+        const seconds = timeToDisplay % 60;
+        const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        document.getElementById('timerDisplay').innerText = timeStr;
+
+        // Sync with header widget
+        if (document.getElementById('widgetTime')) {
+            document.getElementById('widgetTime').innerText = timeStr;
+            let statusMsg = currentPhaseEnum === 'FOCUS' ? (isOvertime ? 'In Flow' : 'Focus') : (currentPhaseEnum === 'SHORT_BREAK' ? 'Short Break' : 'Long Break');
+            document.getElementById('widgetStatus').innerText = statusMsg;
+            document.getElementById('miniWidget').classList.remove('hidden');
+        }
+    }
+
+    function runTimer() {
+        timerInterval = setInterval(() => {
+            if (!isPaused) {
+                elapsedSeconds++;
+                if (!isOvertime) {
+                    timeLeft--;
+                    if (timeLeft <= 0) {
+                        isOvertime = true;
+                        enterOvertimeVisuals();
+                    }
+                } else {
+                    timeLeft++;
+                }
+                updateDisplay();
+                saveState();
+            }
+        }, 1000);
+    }
+
+    function enterOvertimeVisuals() {
+        const labelStr = currentPhaseEnum === 'FOCUS' ? "You have focused for:" : "You have rested for:";
+        document.getElementById('timerLabel').innerText = labelStr;
+        document.getElementById('timerDisplay').classList.add('glow-' + themeColor);
+    }
+
+    function togglePause() {
+        isPaused = !isPaused;
+        document.getElementById('pauseLabel').innerText = isPaused ? "Resume" : "Pause";
+        const iconPath = isPaused
+            ? "M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            : "M10 9v6m4-6v6";
+        document.getElementById('pauseIcon').innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"></path>`;
+        saveState();
+    }
+
+    function prepareAnalytics(formId) {
+        const form = document.getElementById(formId);
+        const actualDurationMinutes = Math.max(0, Math.round(elapsedSeconds / 60));
+        form.querySelector('input[name="actualDuration"]').value = actualDurationMinutes;
+        form.querySelector('input[name="startTime"]').value = trueStartTime;
+    }
+
+    function endSession() {
+        clearInterval(timerInterval);
+        localStorage.removeItem('flowcus_active');
+        prepareAnalytics('endSessionForm');
+        document.getElementById('endSessionForm').submit();
+    }
+
+    function skipToNextPhase() {
+        clearInterval(timerInterval);
+        prepareAnalytics('transitionForm');
+        localStorage.removeItem('flowcus_active');
+        document.getElementById('transitionForm').submit();
+    }
+
+    window.addEventListener('pageshow', (event) => {
+        const savedData = JSON.parse(localStorage.getItem('flowcus_active'));
+        // If the user's storage phase doesn't match the URL's true phase, reload
+        if (savedData && savedData.type !== currentPhaseEnum && savedData.sessionId === sessionId) {
+            window.location.reload();
+            return;
+        }
+        if (timerInterval) clearInterval(timerInterval);
+        loadState();
+        runTimer();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            if (timerInterval) clearInterval(timerInterval);
+            loadState();
+            runTimer();
+        }
+    });
+
+    loadState();
+    runTimer();
+</script>
+</body>
+</html>

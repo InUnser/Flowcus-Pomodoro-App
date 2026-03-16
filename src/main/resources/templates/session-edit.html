@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Flowcus - Edit Session</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom styling for range inputs */
+    input[type=range] {
+        -webkit-appearance: none;
+        background: transparent;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 12px;
+        background: #1a1a1a;
+        border-radius: 6px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 32px;
+        width: 32px;
+        border-radius: 50%;
+        background: #f3f4f6;
+        border: 4px solid #1a1a1a;
+        margin-top: -10px;
+    }
+
+    /* Specific styling to dull the track when disabled */
+    input[type=range]:disabled::-webkit-slider-runnable-track {
+        background: #9ca3af; /* Tailwind gray-400 */
+    }
+    input[type=range]:disabled::-webkit-slider-thumb {
+        border-color: #9ca3af;
+        background: #e5e7eb;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<main class="container mx-auto px-4 py-12 flex justify-center items-center">
+
+  <div class="w-full max-w-xl bg-gray-300 p-10 rounded-[2.5rem] shadow-sm">
+    <h1 class="text-5xl font-medium text-center mb-8">Edit Past Pomodoro Session</h1>
+
+    <form th:action="@{/sessions/edit/{id}(id=${sessionId})}" th:object="${sessionDto}" method="post" class="space-y-6">
+
+      <!-- Session Title (EDITABLE) -->
+      <div>
+        <label class="block text-2xl mb-2">Session Title</label>
+        <input type="text" th:field="*{title}" placeholder="e.g. Studying Math"
+               class="w-full p-3 rounded-lg border-none focus:ring-2 focus:ring-green-800 outline-none text-xl bg-white shadow-inner">
+        <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="text-red-600 text-sm mt-1"></p>
+      </div>
+
+      <!-- Goal Intervals (DISABLED) -->
+      <div>
+        <label class="block text-2xl mb-2 text-gray-700">How many focus session to long break:</label>
+        <input type="number" th:field="*{focusSessionsBeforeLongBreak}" disabled
+               class="w-full p-3 rounded-lg border-none bg-gray-400 text-gray-700 opacity-70 cursor-not-allowed outline-none text-xl font-medium shadow-inner">
+        <!-- Hidden field ensures value is passed in DTO if needed, though we ignore it on backend anyway -->
+        <input type="hidden" th:field="*{focusSessionsBeforeLongBreak}">
+      </div>
+
+      <!-- Focus Duration Slider (DISABLED) -->
+      <div class="opacity-60 cursor-not-allowed">
+        <div class="flex justify-between items-center mb-2 text-gray-700">
+          <label class="text-2xl">Focus Duration</label>
+          <span class="text-xl font-bold" id="focusVal" th:text="*{focusDuration} + ' min'">25 min</span>
+        </div>
+        <input type="range" th:field="*{focusDuration}" min="1" max="120" step="1" disabled
+               class="w-full h-3 rounded-lg appearance-none cursor-not-allowed">
+        <input type="hidden" th:field="*{focusDuration}">
+      </div>
+
+      <!-- Short Break Slider (DISABLED) -->
+      <div class="opacity-60 cursor-not-allowed">
+        <div class="flex justify-between items-center mb-2 text-gray-700">
+          <label class="text-2xl">Short Break Duration</label>
+          <span class="text-xl font-bold" id="shortVal" th:text="*{shortBreakDuration} + ' min'">5 min</span>
+        </div>
+        <input type="range" th:field="*{shortBreakDuration}" min="1" max="30" step="1" disabled
+               class="w-full h-3 rounded-lg appearance-none cursor-not-allowed">
+        <input type="hidden" th:field="*{shortBreakDuration}">
+      </div>
+
+      <!-- Long Break Slider (DISABLED) -->
+      <div class="opacity-60 cursor-not-allowed">
+        <div class="flex justify-between items-center mb-2 text-gray-700">
+          <label class="text-2xl">Long Break Duration</label>
+          <span class="text-xl font-bold" id="longVal" th:text="*{longBreakDuration} + ' min'">15 min</span>
+        </div>
+        <input type="range" th:field="*{longBreakDuration}" min="1" max="60" step="1" disabled
+               class="w-full h-3 rounded-lg appearance-none cursor-not-allowed">
+        <input type="hidden" th:field="*{longBreakDuration}">
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-between gap-4 pt-6">
+        <a th:href="@{/past-sessions}"
+           class="bg-red-700 text-white px-8 py-3 rounded-xl text-xl font-bold hover:bg-red-800 transition shadow-md w-1/2 text-center">
+          Cancel
+        </a>
+        <button type="submit"
+                class="bg-green-800 text-white px-8 py-3 rounded-xl text-xl font-bold hover:bg-green-900 transition shadow-md w-1/2">
+          Save Pomodoro Session
+        </button>
+      </div>
+    </form>
+  </div>
+
+</main>
+
+</body>
+</html>

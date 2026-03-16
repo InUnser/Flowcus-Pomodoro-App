@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Flowcus - Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Include Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-gray-900">
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<main class="container mx-auto px-4 py-12 flex flex-col items-center">
+
+
+    <div th:if="${showPicker}" class="w-full max-w-md bg-gray-300 p-10 rounded-[2rem] shadow-sm mt-10">
+        <h1 class="text-4xl font-medium mb-10">Choose Date</h1>
+
+        <!-- Standard GET form. Submits the selected date as '?date=YYYY-MM-DD' -->
+        <form th:action="@{/analytics}" method="get" class="space-y-16">
+            <div>
+                <label class="block text-xl mb-2">Pick a date</label>
+                <input type="date" name="date" required
+                       class="w-full p-3 rounded-sm border-none focus:ring-2 focus:ring-green-800 outline-none bg-white text-xl">
+            </div>
+
+            <div class="flex justify-between gap-4 pt-4">
+                <!-- Cancel returns to Home -->
+                <a th:href="@{/home}"
+                   class="bg-red-700 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-red-800 transition shadow-md w-1/2 text-center">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="bg-green-800 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-green-900 transition shadow-md w-1/2">
+                    Confirm
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div th:unless="${showPicker}" class="w-full max-w-4xl relative mt-4">
+
+        <!-- Dynamic Date Header -->
+        <h1 class="text-4xl font-bold text-center mb-8" th:text="${selectedDate}">1/1/2026</h1>
+
+        <!-- Session Count-->
+        <div class="absolute top-0 right-0 text-1xl font-bold mt-2">
+            Number of Focus Session: <span th:text="${focusSessionCount}">x</span>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${!hasData}" class="text-center py-20 bg-gray-200 rounded-3xl border border-gray-300 shadow-inner mt-16">
+            <svg class="w-20 h-20 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <h2 class="text-2xl text-gray-600 font-medium">No Focus Sessions Found</h2>
+            <p class="text-gray-500 mt-2">You didn't record any focus intervals on this date.</p>
+            <a th:href="@{/analytics}" class="inline-block mt-6 text-green-700 hover:underline">← Pick another date</a>
+        </div>
+
+        <!-- Chart & Legend Container -->
+        <div th:if="${hasData}" class="flex flex-col items-center mt-12">
+
+            <!-- Canvas for Chart.js -->
+            <div class="w-[400px] h-[400px]">
+                <canvas id="focusPieChart"></canvas>
+            </div>
+
+            <!-- HTML Legend -->
+            <div class="mt-16 space-y-4">
+                <div th:each="item : ${chartItems}" class="flex items-center space-x-6">
+                    <!-- Colored Square -->
+                    <div class="w-6 h-6 rounded-sm shadow-sm" th:style="'background-color: ' + ${item.colorHex}"></div>
+                    <!-- Project Title -->
+                    <div class="text-3xl font-bold text-gray-900 min-w-[150px]" th:text="${item.title}">ProjectA</div>
+                    <!-- Formatted Time -->
+                    <div class="text-3xl font-bold text-gray-900" th:text="${item.formattedTime}">1hour</div>
+                </div>
+            </div>
+
+            <a th:href="@{/analytics}" class="mt-16 text-gray-500 hover:text-green-700 transition underline decoration-1 underline-offset-4">Select a different date</a>
+        </div>
+
+    </div>
+
+</main>
+
+<script th:inline="javascript" th:if="${!showPicker and hasData}">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Thymeleaf injects java lists directly into arrays
+        const labels = [[${chartLabels}]];
+        const dataValues = [[${chartData}]];
+        const backgroundColors = [[${chartColors}]];
+
+        const ctx = document.getElementById('focusPieChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: dataValues,
+                    backgroundColor: backgroundColors,
+                    borderWidth: 0, // No borders between slices to match the flat aesthetic
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    // disable the built-in legend because we have custom HTML one below it
+                    legend: {
+                        display: false
+                    },
+                    // Built-in Tooltip to show percentage when hovering over pie slices
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.raw;
+                                const total = context.chart._metasets[context.datasetIndex].total;
+                                // Prevent Divide-by-Zero (NaN%) if the total is exactly 0
+                                let percentage = '0%';
+                                if (total > 0) {
+                                    percentage = Math.round((value / total) * 100) + '%';
+                                }
+                                return ' ' + context.label + ': ' + percentage + ' (' + value + ' mins)';
+                            }
+                        },
+                        bodyFont: { size: 16 },
+                        padding: 12
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

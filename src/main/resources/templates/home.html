@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang='en' xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Flowcus - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        .island-float { animation: float 5s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<main class="container mx-auto px-4 min-h-[calc(100vh-80px)] flex flex-col md:flex-row items-center justify-around">
+
+    <!-- Left Half: Floating Island -->
+    <div th:replace="~{fragments/island :: floating-island}"></div>
+
+    <!-- Right Half: New Session UI -->
+    <div class="w-full md:w-1/2 flex flex-col items-center text-center">
+        <h2 class="text-6xl font-medium mb-12">New Pomodoro Session</h2>
+        <a th:href="@{/sessions/new}" class="group transition-all duration-300 transform hover:scale-110">
+            <div class="w-32 h-32 border-4 border-gray-800 rounded-full flex items-center justify-center hover:bg-gray-800 hover:text-white transition shadow-lg">
+                <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+            </div>
+        </a>
+    </div>
+
+</main>
+
+<!-- Trying to prevent back button-->
+<script>
+    // Professional Back-Button and State Management
+    window.addEventListener('pageshow', (event) => {
+        // Did the user press the Back button to see a frozen, cached version of this page?
+        if (event.persisted) {
+            // Force the browser to ask Spring Boot what the real truth is
+            window.location.reload();
+        } else {
+            // This is a fresh load from the server.
+            // Since Spring Boot allowed us to see this page, it means this user
+            // has no active session in the database.
+            // So, if localStorage thinks there is an active session, it's a ghost from
+            // another user or another tab so remove it
+            localStorage.removeItem('flowcus_active');
+        }
+    });
+</script>
+</body>
+</html>

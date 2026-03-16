@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="navbar" class="bg-gray-300 px-8 py-4 flex justify-between items-center shadow-sm sticky top-0 z-50">
+
+    <!-- Navigation Links -->
+    <nav class="flex space-x-8 font-medium text-gray-800">
+        <a th:href="@{/home}" class="hover:text-green-800 transition">Home</a>
+        <a th:href="@{/people}" class="hover:text-green-800 transition">People</a>
+        <a th:href="@{/analytics}" class="hover:text-green-800 transition">Analytics</a>
+        <a th:href="@{/past-sessions}" class="hover:text-green-800 transition">Past Sessions</a>
+        <a th:href="@{/session-settings}" class="hover:text-green-800 transition">Session Settings</a>
+    </nav>
+
+    <div class="flex items-center space-x-6">
+        <div id="miniWidget"
+             class="hidden flex items-center bg-white px-4 py-1 rounded-full border border-green-600 shadow-sm cursor-pointer hover:bg-green-50 transition-colors"
+             title="Click to return to active session">
+            <span class="text-xs font-bold text-green-600 mr-2 uppercase tracking-tighter"
+                  id="widgetStatus">Focus</span>
+            <span class="font-mono font-bold" id="widgetTime">00:00</span>
+        </div>
+
+        <!-- User Icon with Dropdown -->
+        <div class="relative group">
+            <button class="w-10 h-10 bg-white-800 rounded-full flex items-center justify-center cursor-pointer hover:opacity-80 transition overflow-hidden">
+                <!-- Displays the image path directly from the currentUser object -->
+                <img th:src="${currentUser?.profilePic}"
+                     class="w-full h-full object-cover"
+                     alt="Profile Picture">
+            </button>
+
+            <!-- Dropdown Menu-->
+            <div class="absolute right-0 w-48 mt-0 bg-white border border-gray-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <div class="p-4 border-b border-gray-100">
+                    <p class="text-sm font-bold truncate" th:text="${currentUser?.username}">Username</p>
+                    <p class="text-xs text-gray-500 truncate" th:text="${currentUser?.email}">email@domain.com</p>
+                </div>
+                <a th:href="@{/settings}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+
+                <form th:action="@{/logout}" method="post" id="logoutForm">
+                    <button type="button"
+                            onclick="localStorage.removeItem('flowcus_active'); document.getElementById('logoutForm').submit();"
+                            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Timer Sync Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const path = window.location.pathname;
+
+            // Click handler to return to the active session
+            document.getElementById('miniWidget').addEventListener('click', () => {
+                const savedData = JSON.parse(localStorage.getItem('flowcus_active'));
+                if (savedData && savedData.sessionId) {
+                    window.location.href = `/sessions/timer/${savedData.sessionId}`;
+                }
+            });
+
+            // Timer sync logic (only runs if we are NOT already on a timer page)
+            if (!path.includes('/sessions/timer')) {
+
+                function syncWidget() {
+                    const savedData = JSON.parse(localStorage.getItem('flowcus_active'));
+
+                    if (savedData) {
+                        document.getElementById('miniWidget').classList.remove('hidden');
+
+                        let currentLeft = savedData.timeLeft;
+                        let isFlow = savedData.isFlowState;
+                        let isOvertime = savedData.isOvertime || false;
+                        let currentElapsed = savedData.elapsedSeconds || 0;
+
+                        if (!savedData.isPaused) {
+                            const now = Date.now();
+                            const secondsPassed = Math.floor((now - savedData.lastUpdated) / 1000);
+
+                            currentElapsed += secondsPassed;
+
+                            const overtimeCheck = (savedData.type === 'FOCUS') ? isFlow : isOvertime;
+
+                            if (overtimeCheck) {
+                                currentLeft = savedData.timeLeft + secondsPassed;
+                            } else {
+                                currentLeft = savedData.timeLeft - secondsPassed;
+                                if (currentLeft <= 0) {
+                                    if (savedData.type === 'FOCUS') isFlow = true;
+                                    else isOvertime = true;
+                                }
+                            }
+                        }
+
+                        let statusText = savedData.type === 'FOCUS' ? 'Focus' :
+                                         savedData.type === 'SHORT_BREAK' ? 'Break' : 'Long Break';
+
+                        if (savedData.type === 'FOCUS' && isFlow) statusText = 'In Flow';
+                        if (savedData.isPaused) statusText += ' (Paused)';
+
+                        document.getElementById('widgetStatus').innerText = statusText;
+
+                        const timeToDisplay = (savedData.type === 'FOCUS' && isFlow) || (savedData.type !== 'FOCUS' && isOvertime)
+                                              ? currentElapsed : Math.abs(currentLeft);
+
+                        const mins = Math.floor(timeToDisplay / 60);
+                        const secs = timeToDisplay % 60;
+                        document.getElementById('widgetTime').innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+                    } else {
+                        document.getElementById('miniWidget').classList.add('hidden');
+                    }
+                }
+
+                syncWidget();
+
+                // Run it every second
+                setInterval(syncWidget, 1000);
+            }
+        });
+    </script>
+</div>
+</html>
